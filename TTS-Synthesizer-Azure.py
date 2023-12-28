@@ -8,6 +8,8 @@ import azure.cognitiveservices.speech as speechsdk
 import datetime as dt
 
 os.environ['AZURE_CLIENT_ID'] = 'x'
+os.environ['AZURE_TENANT_ID'] = 'x'
+os.environ['AZURE_CLIENT_SECRET'] = 'x'
 
 class MainWindow(QMainWindow):
     def __init__(self):
