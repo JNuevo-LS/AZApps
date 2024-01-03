@@ -1,5 +1,5 @@
 from PyQt6 import QtCore
-from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QTextEdit, QVBoxLayout, QComboBox, QFileDialog, QMainWindow
+from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QTextEdit, QVBoxLayout, QComboBox, QFileDialog, QMainWindow, QMessageBox
 import os
 import sys
 from azure.identity import DefaultAzureCredential
@@ -7,9 +7,9 @@ from azure.keyvault.secrets import SecretClient
 import azure.cognitiveservices.speech as speechsdk
 import datetime as dt
 
-os.environ['AZURE_CLIENT_ID'] = 'x'
-os.environ['AZURE_TENANT_ID'] = 'x'
-os.environ['AZURE_CLIENT_SECRET'] = 'x'
+os.environ['AZURE_CLIENT_ID'] = 'Redacted'
+os.environ['AZURE_TENANT_ID'] = 'Redacted'
+os.environ['AZURE_CLIENT_SECRET'] = 'Redacted'
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -25,8 +25,8 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.text_to_synthesize)
 
         self.credential = DefaultAzureCredential()
-        self.secret_client = SecretClient(vault_url='x', credential=self.credential)
-        self.speech_service_key = self.secret_client.get_secret('x')
+        self.secret_client = SecretClient(vault_url='https://tts-keys.vault.azure.net/', credential=self.credential)
+        self.speech_service_key = self.secret_client.get_secret('<Redacted>KeyforTTS')
 
 
         self.VoiceNames = QComboBox(parent=self.window)
@@ -34,22 +34,20 @@ class MainWindow(QMainWindow):
         self.list_of_names = [
             'es-CU-ManuelNeural',
             'es-CU-BelkysNeural',
-            'es-ES-ElviraNeural',
-            'es-ES-AlvaroNeural',
-            'es-ES-AbrilNeural',
             'es-ES-ArnauNeural',
-            'es-ES-DarioNeural',
             'es-ES-EliasNeural',
             'es-ES-EstrellaNeural',
             'es-ES-IreneNeural',
-            'es-ES-LaiaNeural',
-            'es-ES-LiaNeural',
-            'es-ES-NilNeural',
-            'es-ES-SaulNeural',
-            'es-ES-TeoNeural',
-            'es-ES-TrianaNeural',
-            'es-ES-VeraNeural',
-            'es-ES-XimenaNeural']
+            'en-US-ChristopherNeural',
+            'en-US-CoraNeural',
+            'en-US-ElizabethNeural',
+            'en-US-JennyMultilingualV2Neural',
+            'en-US-AvaMultilingualNeural',
+            'de-DE-SeraphinaMultilingualNeural',
+            'en-US-AvaNeural',
+            'en-US-RogerNeural',
+            'en-US-JennyNeural',
+            'en-US-TonyNeural']
 
         for voice in self.list_of_names:
             self.VoiceNames.addItem(voice)
@@ -62,11 +60,14 @@ class MainWindow(QMainWindow):
         self.window.show()
  
     def synthesizer(self):
-        ChooseFile = QFileDialog.getExistingDirectory(parent=None, caption='Select Directory' )
-        timestamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+        ChooseFile = QFileDialog.getSaveFileName(parent=None,caption='Save File',filter='WAV Files (*.wav);;MP3 Files (*.mp3);;All Files (*)')
+        if ChooseFile:
+            pass
+        else:
+            QMessageBox.warning(self, 'Error', "File was not named.")
         speech_config = speechsdk.SpeechConfig(subscription=self.speech_service_key.value, region='eastus')
         speech_config.speech_synthesis_voice_name = f'{self.VoiceNames.currentText()}'
-        audio_config = speechsdk.AudioConfig(filename=f'{ChooseFile}\output_{timestamp}.wav')
+        audio_config = speechsdk.AudioConfig(filename=f'{ChooseFile[0]}')
         speech_synthesizer = speechsdk.SpeechSynthesizer(speech_config=speech_config, audio_config=audio_config)
 
         text = self.text_to_synthesize.toPlainText()
