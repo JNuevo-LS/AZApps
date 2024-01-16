@@ -6,10 +6,11 @@ import moviepy.editor as editor
 import wave, contextlib
 import praw
 from PyQt6 import QtCore
-from PyQt6.QtCore import QUrl
 from PyQt6.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QComboBox, QFileDialog, QMainWindow, QListWidget, QLineEdit, QCheckBox, QMessageBox
 from PyQt6.QtGui import QIntValidator
 import sys
+import logging
+
 
 os.environ['AZURE_CLIENT_ID'] = '<Redacted>'
 os.environ['AZURE_TENANT_ID'] = '<Redacted>'
@@ -18,6 +19,7 @@ os.environ['AZURE_CLIENT_SECRET'] = '<Redacted>'
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        logging.basicConfig(filemode='Error.log', level=logging.ERROR)
         self.window = QWidget()
         self.window.setWindowTitle('Azure Video Creator')
         self.window.setFixedSize(400,500)
@@ -175,18 +177,21 @@ class MainWindow(QMainWindow):
             self.time_marker += length
         
     def FinalRun(self):
-        if self.postcount.text().strip() == '':
-            QMessageBox.critical(self, 'Error', '# of Posts cannot be empty')
-            return
-        if self.subreddits.count() == 0:
-            QMessageBox.critical(self, 'Error', 'Subreddit List Cannot be Empty')
-            return
-        if self.ChosenSaveLocation.text().strip() == '' or self.ChosenVideo.text().strip() == '':
-            QMessageBox.critical(self, 'Error', 'No Video or Save Location Selected')
-            return    
-        self.prowl_reddit()
-        self.video_tts_synthesizer()
-        QMessageBox.information(self, 'Completion', 'Task completed successfully!')
+        try:
+            if self.postcount.text().strip() == '':
+                QMessageBox.critical(self, 'Error', '# of Posts cannot be empty')
+                return
+            if self.subreddits.count() == 0:
+                QMessageBox.critical(self, 'Error', 'Subreddit List Cannot be Empty')
+                return
+            if self.ChosenSaveLocation.text().strip() == '' or self.ChosenVideo.text().strip() == '':
+                QMessageBox.critical(self, 'Error', 'No Video or Save Location Selected')
+                return    
+            self.prowl_reddit()
+            self.video_tts_synthesizer()
+            QMessageBox.information(self, 'Completion', 'Task completed successfully!')
+        except Exception as e:
+            logging.error(f'An error occurred: {str(e)}')
 
 
 
